@@ -44,14 +44,57 @@
 
 int main(int argc, char * argv[])
 {
-    QApplication app(argc, argv);
+    QStringList qargv;
+    for (int i=0; i<argc; i++) {
+        qargv.append(QString(argv[i]));
+    }
 
-    QUrl url;
-    if (argc > 1)
-        url = QUrl::fromUserInput(argv[1]);
-    else
-        url = QUrl("http://www.google.com/ncr");
-    MainWindow *browser = new MainWindow(url);
+    QCommandLineParser parser;
+    parser.setApplicationDescription("A kiosk browser based on Qt's Chromium-derived WebEngine component");
+    parser.addHelpOption();
+    parser.addVersionOption();
+
+    QStringList glModes;
+    QMetaEnum glModeEnum = MainWindow::staticMetaObject.enumerator(MainWindow::staticMetaObject.indexOfEnumerator("GlMode"));
+    for (int value = 0; value < glModeEnum.keyCount(); value++) {
+        glModes.append(QString(glModeEnum.valueToKey(value)));
+    }
+
+    QList<QCommandLineOption> options = QList<QCommandLineOption>({
+            {{"uri","u"}, "Set starting url to <uri>", "uri"},
+            {"opengl", QString()+"Use <"+glModes.join('|')+"> for hardware accelerated rendering", "system"}
+            });
+
+    parser.addOptions(options);
+
+    parser.parse(qargv);
+    qDebug() << parser.errorText();
+    QString glMode;
+    if ((glMode = parser.value("opengl")).isEmpty())
+        glMode = "auto";
+    switch (glModeEnum.keyToValue(glMode.toUpper().toLatin1())) {
+    case MainWindow::NATIVE:
+        QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
+        qDebug() << "attempting to use native OpenGL";
+        break;
+    case MainWindow::ANGLE:
+        QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
+        qDebug() << "attempting to use OpenGL ES (or ANGLE, on Windows)";
+        break;
+    case MainWindow::SOFTWARE:
+        qDebug() << "using software rendering";
+        QCoreApplication::setAttribute(Qt::AA_UseSoftwareOpenGL);
+        break;
+    case MainWindow::AUTO:
+    default:
+        qDebug() << "using automatic gl";
+        break;
+    }
+
+    QApplication app(argc, argv);
+    parser.process(app);
+
+    MainWindow *browser = new MainWindow(parser);
     browser->show();
     return app.exec();
 }

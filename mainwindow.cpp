@@ -58,15 +58,27 @@ InvokeWrapper<Arg, R, C> invoke(R *receiver, void (C::*memberFun)(Arg))
     return wrapper;
 }
 
-//! [1]
 
-MainWindow::MainWindow(const QUrl& url)
+MainWindow::MainWindow(QCommandLineParser &options)
 {
     progress = 0;
 
-//! [2]
+    QApplication::setOverrideCursor(Qt::BlankCursor);
+
+    QString uri = options.value("uri");
+
+    if ( uri.isEmpty() )
+    {
+        uri = "http://www.google.com";
+    }
+
     view = new QWebEngineView(this);
-    view->load(url);
+    view->load(uri);
+
+    view->settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
+    view->settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, false);
+
+
     //connect(view, SIGNAL(loadFinished(bool)), SLOT(adjustLocation()));
     connect(view, SIGNAL(titleChanged(QString)), SLOT(adjustTitle()));
     connect(view, SIGNAL(loadProgress(int)), SLOT(setProgress(int)));
@@ -74,9 +86,7 @@ MainWindow::MainWindow(const QUrl& url)
 
     setCentralWidget(view);
 }
-//! [3]
 
-//! [5]
 void MainWindow::adjustTitle()
 {
     if (progress <= 0 || progress >= 100)
@@ -90,6 +100,5 @@ void MainWindow::setProgress(int p)
     progress = p;
     adjustTitle();
 }
-//! [5]
 
 

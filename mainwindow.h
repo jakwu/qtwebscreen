@@ -48,9 +48,12 @@ QT_END_NAMESPACE
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+    Q_ENUMS(GlMode)
 
 public:
-    MainWindow(const QUrl& url);
+    enum GlMode {  AUTO, NATIVE, ANGLE, SOFTWARE };
+
+    MainWindow(QCommandLineParser &options);
 
 protected slots:
 
