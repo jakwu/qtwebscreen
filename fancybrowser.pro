@@ -3,8 +3,8 @@ QT      +=  webenginewidgets
 HEADERS =   mainwindow.h
 SOURCES =   main.cpp \
             mainwindow.cpp
-RESOURCES =
+RESOURCES = jquery.qrc
 
 # install
-target.path = $$[QT_INSTALL_PREFIX]/bin
+target.path = $$[QT_INSTALL_EXAMPLES]/webenginewidgets/fancybrowser
 INSTALLS += target
