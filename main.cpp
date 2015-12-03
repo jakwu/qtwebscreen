@@ -60,12 +60,8 @@ int main(int argc, char * argv[])
         glModes.append(QString(glModeEnum.valueToKey(value)));
     }
 
-    QList<QCommandLineOption> options = QList<QCommandLineOption>({
-            {{"uri","u"}, "Set starting url to <uri>", "uri"},
-            {"opengl", QString()+"Use <"+glModes.join('|')+"> for hardware accelerated rendering", "system"}
-            });
-
-    parser.addOptions(options);
+    parser.addOption(QCommandLineOption("uri", "Set starting url to <uri>", "uri"));
+    parser.addOption(QCommandLineOption("opengl", QString()+"Use <"+glModes.join('|')+"> for hardware accelerated rendering", "system"));
 
     parser.parse(qargv);
     qDebug() << parser.errorText();
