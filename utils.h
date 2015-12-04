@@ -38,46 +38,24 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef UTILS_H
+#define UTILS_H
 
-#include "utils.h"
+#include <QtCore/QFileInfo>
+#include <QtCore/QUrl>
 
-#ifndef QT_NO_WIDGETS
-#include <QtWidgets/QApplication>
-typedef QApplication Application;
-#else
-#include <QtGui/QGuiApplication>
-typedef QGuiApplication Application;
-#endif
-#include <QtQml/QQmlApplicationEngine>
-#include <QtQml/QQmlContext>
-#include <QtWebEngine/qtwebengineglobal.h>
+class Utils : public QObject {
+    Q_OBJECT
+public:
+    Q_INVOKABLE static QUrl fromUserInput(const QString& userInput);
+};
 
-static QUrl startupUrl()
+inline QUrl Utils::fromUserInput(const QString& userInput)
 {
-    QUrl ret;
-    QStringList args(qApp->arguments());
-    args.takeFirst();
-    Q_FOREACH (const QString& arg, args) {
-        if (arg.startsWith(QLatin1Char('-')))
-             continue;
-        ret = Utils::fromUserInput(arg);
-        if (ret.isValid())
-            return ret;
-    }
-    return QUrl(QStringLiteral("http://qt.io/"));
+    QFileInfo fileInfo(userInput);
+    if (fileInfo.exists())
+        return QUrl::fromLocalFile(fileInfo.absoluteFilePath());
+    return QUrl::fromUserInput(userInput);
 }
 
-int main(int argc, char **argv)
-{
-    Application app(argc, argv);
-
-    QtWebEngine::initialize();
-
-    QQmlApplicationEngine appEngine;
-    Utils utils;
-    appEngine.rootContext()->setContextProperty("utils", &utils);
-    appEngine.load(QUrl("qrc:/ApplicationRoot.qml"));
-    QMetaObject::invokeMethod(appEngine.rootObjects().first(), "load", Q_ARG(QVariant, startupUrl()));
-
-    return app.exec();
-}
+#endif // UTILS_H

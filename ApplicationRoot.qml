@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,43 +38,40 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+import QtQuick 2.1
+import QtWebEngine 1.1
 
-QT_BEGIN_NAMESPACE
-class QWebEngineView;
-class QLineEdit;
-QT_END_NAMESPACE
+QtObject {
+    id: root
 
-//! [1]
-class MainWindow : public QMainWindow
-{
-    Q_OBJECT
+    property QtObject defaultProfile: WebEngineProfile {
+        storageName: "Default"
+    }
 
-public:
-    MainWindow(const QUrl& url);
+    property QtObject otrProfile: WebEngineProfile {
+        offTheRecord: true
+    }
 
-protected slots:
-
-    void adjustLocation();
-    void changeLocation();
-    void adjustTitle();
-    void setProgress(int p);
-    void finishLoading(bool);
-
-    void viewSource();
-
-    void highlightAllLinks();
-    void rotateImages(bool invert);
-    void removeGifImages();
-    void removeInlineFrames();
-    void removeObjectElements();
-    void removeEmbeddedElements();
-
-private:
-    QString jQuery;
-    QWebEngineView *view;
-    QLineEdit *locationEdit;
-    QAction *rotateAction;
-    int progress;
-//! [1]
-};
+    property Component browserWindowComponent: BrowserWindow {
+        applicationRoot: root
+        onClosing: destroy()
+    }
+    property Component browserDialogComponent: BrowserDialog {
+        onClosing: destroy()
+    }
+    function createWindow(profile) {
+        var newWindow = browserWindowComponent.createObject(root)
+        newWindow.currentWebView.profile = profile
+        profile.downloadRequested.connect(newWindow.onDownloadRequested)
+        return newWindow
+    }
+    function createDialog(profile) {
+        var newDialog = browserDialogComponent.createObject(root)
+        newDialog.currentWebView.profile = profile
+        return newDialog
+    }
+    function load(url) {
+        var browserWindow = createWindow(defaultProfile)
+        browserWindow.currentWebView.url = url
+    }
+}
