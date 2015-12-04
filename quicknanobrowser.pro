@@ -19,5 +19,5 @@ qtHaveModule(widgets) {
     QT += widgets # QApplication is required to get native styling with QtQuickControls
 }
 
-target.path = $$[QT_INSTALL_EXAMPLES]/webengine/quicknanobrowser
+target.path = $$[QT_INSTALL_PREFIX]/bin
 INSTALLS += target
